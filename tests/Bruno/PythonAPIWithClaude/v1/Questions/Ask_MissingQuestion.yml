@@ -1,0 +1,35 @@
+info:
+  name: Ask_MissingQuestion
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{Host}}api/v{{version}}/{{controller}}"
+  body:
+    type: json
+    data: |-
+      {}
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 422", function () {
+          expect(res.getStatus()).to.equal(422);
+        });
+
+        test("should return validation details", function () {
+          const resBody = res.getBody();
+
+          expect(resBody).to.have.property("detail");
+          expect(resBody.detail).to.be.an("array").and.not.be.empty;
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

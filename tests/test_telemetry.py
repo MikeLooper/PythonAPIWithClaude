@@ -169,7 +169,7 @@ def test_repeated_exporter_errors_are_throttled_on_console(
     finally:
         telemetry.shutdown()
 
-    assert len(console_handler.records) == 1
+    assert len(_records_from(console_handler, exporter_logger.name)) == 1
 
 
 def test_throttle_removed_on_shutdown(
@@ -200,8 +200,8 @@ def test_each_handler_gets_its_own_throttle(
     finally:
         logging.getLogger().removeHandler(second_handler)
 
-    assert len(console_handler.records) == 1
-    assert len(second_handler.records) == 1
+    assert len(_records_from(console_handler, exporter_logger.name)) == 1
+    assert len(_records_from(second_handler, exporter_logger.name)) == 1
 
 
 def _record(
@@ -266,6 +266,12 @@ class _ListHandler(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         self.records.append(record)
+
+
+def _records_from(handler: "_ListHandler", logger_name: str) -> list[logging.LogRecord]:
+    """Records from one logger, ignoring unrelated warnings such as the SDK's
+    "Overriding of current TracerProvider is not allowed" emitted during setup."""
+    return [r for r in handler.records if r.name == logger_name]
 
 
 class _NullWriter:

@@ -1,0 +1,30 @@
+info:
+  name: HealthCheck
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{Host}}health"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return success", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should return status and version", function () {
+          const resBody = res.getBody();
+
+          expect(resBody).to.have.property("status");
+          expect(resBody.status).to.equal("ok");
+          expect(resBody).to.have.property("version");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

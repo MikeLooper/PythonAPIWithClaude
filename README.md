@@ -30,6 +30,7 @@ PythonAPIWithClaude/
 │   └── services/
 │       └── claude_service.py   # Calls Claude; adds GenAI spans and token metrics
 ├── tests/                      # pytest suite (no network: Claude and OTEL are mocked)
+│   └── Bruno/                  # Bruno API tests, run against the running service
 ├── docs/                       # Generation prompts
 ├── .env.example                # Template for local configuration
 └── pyproject.toml              # Dependencies and tool config (pytest, coverage, ruff)
@@ -288,6 +289,32 @@ Testing conventions:
   exporters.
 - Async tests run through `pytest-asyncio` (`asyncio_mode = "auto"`).
 - Tests use the Arrange / Act / Assert layout, with one behaviour per test.
+
+### Bruno API tests
+
+[tests/Bruno/PythonAPIWithClaude](tests/Bruno/PythonAPIWithClaude) is a [Bruno](https://www.usebruno.com/)
+collection that tests the running service over HTTP. Unlike the pytest suite, it calls the real
+Claude API.
+
+| Folder | Requests | Checks |
+|---|---|---|
+| `System` | `HealthCheck` | `GET /health` returns `200` with `status` and `version` |
+| `v1/Questions` | `Ask`, `Ask_WithOverrides` | `200` with an answer, the model used, `stop_reason` and token `usage` |
+| `v1/Questions` | `Ask_UnknownModel` | `400` when Claude rejects an unknown model |
+| `v1/Questions` | `Ask_MissingQuestion`, `Ask_EmptyQuestion`, `Ask_BlankQuestion`, `Ask_QuestionTooLong`, `Ask_InvalidModel`, `Ask_MaxTokensTooSmall`, `Ask_MaxTokensTooLarge` | `422` for invalid request bodies |
+
+The `Local` environment points to `http://localhost:56601/`. Start the service, then either open
+the [tests/Bruno](tests/Bruno) folder in the Bruno app, select the `Local` environment and run the
+collection, or use the Bruno CLI (requires Node.js):
+
+```powershell
+cd tests/Bruno/PythonAPIWithClaude
+npx @usebruno/cli run --env Local
+```
+
+Only `Ask`, `Ask_WithOverrides` and `Ask_UnknownModel` reach Claude, and only the first two use
+tokens, so a run costs very little. The service rejects the other requests before calling Claude. The API has no
+authentication, so the collection needs no secrets.
 
 Workflow: work on a branch off `develop`, keep `pytest` and `ruff check` passing, then open a PR
 to `main`.

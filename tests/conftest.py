@@ -30,6 +30,13 @@ def _tracer_provider() -> None:
     trace.set_tracer_provider(provider)
 
 
+@pytest.fixture(autouse=True)
+def _isolate_settings_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Hide app settings from the real environment (e.g. ``.env`` loaded by the IDE test runner)."""
+    for name in Settings.model_fields:
+        monkeypatch.delenv(name.upper(), raising=False)
+
+
 @pytest.fixture
 def span_exporter() -> Iterator[InMemorySpanExporter]:
     _SPAN_EXPORTER.clear()
