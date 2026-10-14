@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: API with Claude",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app.main:create_app",
+                "--factory",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "56601"
+            ],
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.env",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "Uvicorn running on http://\\S+:(\\d+)",
+                "uriFormat": "http://localhost:%s/docs"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

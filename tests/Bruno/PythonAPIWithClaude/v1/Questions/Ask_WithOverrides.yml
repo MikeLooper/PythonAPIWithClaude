@@ -1,0 +1,49 @@
+info:
+  name: Ask_WithOverrides
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{Host}}api/v{{version}}/{{controller}}"
+  body:
+    type: json
+    data: |-
+      {
+        "question": "What is 2 + 2? Answer with just the number.",
+        "model": "claude-haiku-5-5",
+        "max_tokens": 200
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return status 200", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should return answer", function () {
+          const resBody = res.getBody();
+
+          expect(resBody).to.have.property("answer");
+          expect(resBody.answer).to.be.a("string").and.not.be.empty;
+          expect(resBody).to.have.property("model");
+          expect(resBody.model).to.contain("claude-");
+          expect(resBody).to.have.property("stop_reason");
+          expect(resBody).to.have.property("usage");
+          expect(resBody.usage.input_tokens).to.be.above(0);
+          expect(resBody.usage.output_tokens).to.be.above(0);
+        });
+
+        test("should use the requested model", function () {
+          expect(res.getBody().model).to.contain("claude-haiku-5-5");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
