@@ -1,0 +1,5 @@
+name: Docker
+variables:
+  - name: Host
+    value: http://localhost:11111/
+    description: "The base URL for the API under test"
